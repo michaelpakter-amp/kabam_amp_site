@@ -88,7 +88,7 @@ header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);bac
 @media (prefers-reduced-motion:reduce){.marq div{animation:none}}
 
 /* GAME TILES */
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .tile{background:#fff;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line)}
 .tile .art{aspect-ratio:4/3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:20px;background:repeating-linear-gradient(135deg,#F7F9FD 0 14px,#EFF3FB 14px 28px);border-bottom:3px solid var(--orange);color:var(--muted);font-size:13px}
 .tile .art b{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)}
@@ -172,8 +172,9 @@ header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);bac
 
 /* LIGHTBOX */
 .frame img.shot,.tile .art-img,.overlay-wrap{cursor:zoom-in}
+.tile .art-img.no-zoom{cursor:default}
 .frame{position:relative}
-.frame:has(img.shot)::after,.tile:has(.art-img)::after{content:"Click to enlarge";position:absolute;right:10px;bottom:10px;background:rgba(11,26,74,.85);color:#fff;font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:4px;opacity:0;transition:opacity .15s;pointer-events:none}
+.frame:has(img.shot)::after,.tile:has(.art-img:not(.no-zoom))::after{content:"Click to enlarge";position:absolute;right:10px;bottom:10px;background:rgba(11,26,74,.85);color:#fff;font:600 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:4px;opacity:0;transition:opacity .15s;pointer-events:none}
 .frame:hover::after,.tile:hover::after{opacity:1}
 .tile{position:relative}
 #lb{position:fixed;inset:0;z-index:200;background:rgba(7,12,32,.92);display:none;flex-direction:column}
@@ -371,9 +372,10 @@ body.locked>:not(#gate){display:none}
     <div class="tiles">
       <div class="tile"><img class="art-img" src="images/game-mcoc.jpg" alt="Marvel Contest of Champions key art"><div class="body"><h4>Marvel Contest of Champions</h4><p>Progression-based segments, event and live-ops testing, and smarter win-back for lapsed champions.</p></div></div>
       <div class="tile"><img class="art-img" src="images/game-shoptitans.jpg" alt="Shop Titans key art"><div class="body"><h4>Shop Titans</h4><p>Understand the trade and crafting loop, test offers and onboarding, and personalize by player stage.</p></div></div>
-      <div class="tile"><img class="art-img" src="images/game-next.jpg" alt="Wilderings: The Lost Spring key art"><div class="body"><h4>Wilderings: The Lost Spring</h4><p>Launch new titles with a governed data foundation from day one, so retention, monetization, and LTV are measurable from the start.</p></div></div>
+      <div class="tile"><img class="art-img" src="images/game-next.jpg" alt="Wilderings: The Lost Spring key art"><div class="body"><h4>Wilderings: The Lost Spring</h4><p>See how players discover, progress through, and return to a newer title, with retention and monetization measurable from the start.</p></div></div>
+      <div class="tile"><img class="art-img no-zoom" src="images/game-unreleased.png" alt="Placeholder art for an upcoming, unreleased game"><div class="body"><h4>Upcoming release</h4><p>Build measurement in before launch: events, retention, monetization, and ad-revenue LTV ready on day one, so the first weeks of data are trusted.</p></div></div>
     </div>
-    <p class="caption">Game art and names belong to their respective owners and are shown to illustrate the use cases. </p>
+    <p class="caption">Game art and names belong to their respective owners and are shown to illustrate the use cases.</p>
   </div>
 </section>
 
@@ -846,7 +848,7 @@ document.querySelectorAll(".ph[data-slot]").forEach(function(ph){
       var hl=document.createElement("span");hl.className="hl";
       r.appendChild(b);r.appendChild(hl);pair.appendChild(a);pair.appendChild(r);open(pair);return;
     }
-    if(t.tagName==="IMG"&&(t.classList.contains("shot")||t.classList.contains("art-img"))&&!lb.contains(t)){
+    if(t.tagName==="IMG"&&(t.classList.contains("shot")||t.classList.contains("art-img"))&&!t.classList.contains("no-zoom")&&!lb.contains(t)){
       var im=document.createElement("img");im.src=t.getAttribute("data-full")||t.currentSrc||t.src;im.alt=t.alt;open(im);return;
     }
     if(lb.contains(t)){
