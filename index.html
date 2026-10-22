@@ -285,6 +285,23 @@ body.locked>:not(#gate){display:none}
   .hero::after{width:50%;opacity:.35}
 }
 </style>
+<!-- Amplitude Browser SDK (analytics). Client-side keys are public by design. -->
+<script>!function(){"use strict";!function(e,t){var r=e.amplitude||{_q:[],_iq:{}};if(r.invoked)e.console&&console.error&&console.error("Amplitude snippet has been loaded.");else{var n=function(e,t){e.prototype[t]=function(){return this._q.push({name:t,args:Array.prototype.slice.call(arguments,0)}),this}},s=function(e,t,r){return function(n){e._q.push({name:t,args:Array.prototype.slice.call(r,0),resolve:n})}},o=function(e,t,r){e[t]=function(){if(r)return{promise:new Promise(s(e,t,Array.prototype.slice.call(arguments)))};!function(e,t,r){e._q.push({name:t,args:Array.prototype.slice.call(r,0)})}(e,t,Array.prototype.slice.call(arguments))}},i=function(e){for(var t=0;t<v.length;t++)o(e,v[t],!1);for(var r=0;r<g.length;r++)o(e,g[r],!0)};r.invoked=!0;var a=t.createElement("script");a.type="text/javascript",a.integrity="sha384-Sk+l9VwU+jvx8zsmLuRDNUQE+0K4h0xsyjdrfb/czM6hRumd1igYdOvGwa0LAGcq",a.crossOrigin="anonymous",a.async=!0,a.src="https://cdn.amplitude.com/libs/analytics-browser-2.48.1-min.js.gz",a.onload=function(){e.amplitude.runQueuedFunctions||console.log("[Amplitude] Error: could not load SDK")};var c=t.getElementsByTagName("script")[0];c.parentNode.insertBefore(a,c);for(var u=function(){return this._q=[],this},p=["add","append","clearAll","prepend","set","setOnce","unset","preInsert","postInsert","remove","getUserProperties"],l=0;l<p.length;l++)n(u,p[l]);r.Identify=u;for(var d=function(){return this._q=[],this},f=["getEventProperties","setProductId","setQuantity","setPrice","setRevenue","setRevenueType","setReceipt","setReceiptSig","setCurrency","setEventProperties"],y=0;y<f.length;y++)n(d,f[y]);r.Revenue=d;var v=["getDeviceId","setDeviceId","getSessionId","setSessionId","getUserId","setUserId","setOptOut","setTransport","reset","extendSession"],g=["init","add","remove","track","logEvent","identify","groupIdentify","setGroup","revenue","flush"];i(r),r.createInstance=function(e){return r._iq[e]={_q:[]},i(r._iq[e]),r._iq[e]},e.amplitude=r}}(window,document)}();</script>
+<script>
+(function(){
+  var KEY="d3f6c6dd8d4d54155246fa847cb80330";
+  var dnt=(navigator.doNotTrack==="1"||window.doNotTrack==="1"||navigator.globalPrivacyControl===true);
+  window.kbTrack=function(name,props){
+    try{ if(!dnt&&window.amplitude&&amplitude.track){ amplitude.track(name,Object.assign({site:"kabam_amp",page_variant:"hybrid"},props||{})); } }catch(e){}
+  };
+  try{
+    if(!dnt&&window.amplitude&&amplitude.init){
+      amplitude.init(KEY,{ autocapture:{ pageViews:true, sessions:true, formInteractions:false, fileDownloads:false, elementInteractions:false } });
+      var id=new amplitude.Identify(); id.set("site","kabam_amp"); id.set("page_variant","hybrid"); amplitude.identify(id);
+    }
+  }catch(e){}
+})();
+</script>
 </head>
 <body class="locked">
 
@@ -812,8 +829,9 @@ var USER="kabam_amp", PASS="kabam_amp";
     e.preventDefault();
     if(document.getElementById("u").value.trim()===USER && document.getElementById("p").value===PASS){
       try{sessionStorage.setItem("kb_ok","1")}catch(e){}
+      window.kbTrack&&kbTrack("Gate Passed");
       document.body.classList.remove("locked");document.getElementById("gate").style.display="none";
-    } else document.getElementById("gerr").textContent="Incorrect username or password.";
+    } else { window.kbTrack&&kbTrack("Gate Failed"); document.getElementById("gerr").textContent="Incorrect username or password."; }
   });
 })();
 
@@ -846,10 +864,10 @@ document.querySelectorAll(".ph[data-slot]").forEach(function(ph){
       var r=document.createElement("div");r.className="r";
       var b=document.createElement("img");b.src="images/personalization-modal-full.png";b.alt="Cohort sync menu";
       var hl=document.createElement("span");hl.className="hl";
-      r.appendChild(b);r.appendChild(hl);pair.appendChild(a);pair.appendChild(r);open(pair);return;
+      r.appendChild(b);r.appendChild(hl);pair.appendChild(a);pair.appendChild(r);open(pair);window.kbTrack&&kbTrack("Screenshot Enlarged",{image:"personalization"});return;
     }
     if(t.tagName==="IMG"&&(t.classList.contains("shot")||t.classList.contains("art-img"))&&!t.classList.contains("no-zoom")&&!lb.contains(t)){
-      var im=document.createElement("img");im.src=t.getAttribute("data-full")||t.currentSrc||t.src;im.alt=t.alt;open(im);return;
+      var im=document.createElement("img");im.src=t.getAttribute("data-full")||t.currentSrc||t.src;im.alt=t.alt;open(im);window.kbTrack&&kbTrack("Screenshot Enlarged",{image:((t.getAttribute("src")||"").split("/").pop()||"").replace(/\.[a-z]+$/,""),alt:(t.alt||"").slice(0,80)});return;
     }
     if(lb.contains(t)){
       if(t.tagName==="IMG"&&t.parentNode===st){t.classList.toggle("full");return}
@@ -857,6 +875,35 @@ document.querySelectorAll(".ph[data-slot]").forEach(function(ph){
     }
   });
   document.addEventListener("keydown",function(e){if(e.key==="Escape"&&lb.classList.contains("open"))close()});
+})();
+
+
+/* ---- Amplitude tracking: sections, scroll depth, clicks ---- */
+(function(){
+  if(!window.kbTrack) return;
+  var seen={};
+  var sections=[].slice.call(document.querySelectorAll("main > section[id], .hero"));
+  var so=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var el=e.target, id=el.id||"hero"; if(seen[id]) return; seen[id]=1;
+    var hd=el.querySelector("h1,h2"); 
+    kbTrack("Section Viewed",{section_id:id,section_title:hd?hd.textContent.replace(/\s+/g," ").trim().slice(0,80):id});
+  })},{threshold:.35});
+  sections.forEach(function(s){so.observe(s)});
+  var marks={25:0,50:0,75:0,100:0};
+  addEventListener("scroll",function(){
+    var h=document.documentElement, pct=Math.round(h.scrollTop/(h.scrollHeight-h.clientHeight)*100);
+    [25,50,75,100].forEach(function(m){ if(!marks[m]&&pct>=m){marks[m]=1;kbTrack("Scroll Depth",{percent:m})} });
+  },{passive:true});
+  document.addEventListener("click",function(e){
+    var a=e.target.closest&&e.target.closest("a"); if(!a) return;
+    var href=a.getAttribute("href")||"", txt=(a.textContent||"").replace(/\s+/g," ").trim().slice(0,60);
+    if(href.indexOf("mailto:")===0){ kbTrack("Email Link Clicked",{href:href.split("?")[0].replace("mailto:",""),text:txt}); }
+    else if(/^https?:/i.test(href)&&a.hostname!==location.hostname){ kbTrack("Outbound Link Clicked",{href:href,text:txt}); }
+    else if(a.closest("#navlinks")){ kbTrack("Nav Clicked",{target:href,text:txt}); }
+    else if(a.classList.contains("btn")){ kbTrack("CTA Clicked",{target:href,text:txt}); }
+    else if(a.classList.contains("row")){ kbTrack("Contents Row Clicked",{target:href,text:txt}); }
+  });
 })();
 
 /* ---- Progress bar + active nav ---- */
